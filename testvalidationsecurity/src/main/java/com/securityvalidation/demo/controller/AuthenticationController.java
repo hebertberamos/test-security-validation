@@ -1,6 +1,8 @@
 package com.securityvalidation.demo.controller;
 
+import com.securityvalidation.demo.config.TokenServiceConfig;
 import com.securityvalidation.demo.dtos.AuthenticationDTO;
+import com.securityvalidation.demo.dtos.LoginResponseDTO;
 import com.securityvalidation.demo.dtos.RegisterDTO;
 import com.securityvalidation.demo.entities.User;
 import com.securityvalidation.demo.repositories.UserRepository;
@@ -21,9 +23,10 @@ public class AuthenticationController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-
     @Autowired
     private UserRepository repository;
+    @Autowired
+    private TokenServiceConfig tokenService;
 
     // Endpoint de login de usuário
     @PostMapping("/login")
@@ -32,7 +35,10 @@ public class AuthenticationController {
         var userNamePassword = new UsernamePasswordAuthenticationToken(dto.login(), dto.password());
         var auth = this.authenticationManager.authenticate(userNamePassword); // Autenticaçào do usuário e da senha
 
-        return ResponseEntity.ok().build();
+        // Token para que o usuário possa utilizar nas próximas requisições.
+         var token = tokenService.generateToken((User) auth.getPrincipal());
+
+        return ResponseEntity.ok(new LoginResponseDTO(token));
     }
 
     // Endpoint de criação de um novo usuário
